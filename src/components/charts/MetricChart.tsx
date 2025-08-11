@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -7,8 +7,18 @@ import {
   ResponsiveContainer,
   Tooltip,
   LabelList,
+  Cell,
+  CartesianGrid
 } from "recharts";
 import { WeeklyMetrics } from "@/hooks/usePartnerData";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Filter } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
 
 interface MetricChartProps {
   data: WeeklyMetrics[];
@@ -58,7 +68,7 @@ export const MetricChart: React.FC<MetricChartProps> = ({
       planned: number | null;
     }[] = [];
 
-    for (let w = currentWeek - 10; w <= currentWeek + 0; w++) {
+    for (let w = currentWeek - 8; w <= currentWeek + 4; w++) {
       const row = data.find((d) => d.week_num === w);
       arr.push({
         week: w,
@@ -68,6 +78,13 @@ export const MetricChart: React.FC<MetricChartProps> = ({
     }
     return arr;
   }, [data, actualKey, plannedKey, currentWeek]);
+
+  const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
+  useEffect(() => {
+    setVisibleWeeks(chartData.map(d => d.week));
+  }, [chartData]);
+
+  const filteredData = chartData.filter(d => visibleWeeks.includes(d.week));
 
   const formatValue = (value: number) => {
     if (value == null) return "";
@@ -79,12 +96,48 @@ export const MetricChart: React.FC<MetricChartProps> = ({
 
   return (
     <div className="bg-card rounded-lg border">
-      <h3 className="text-lg font-semibold text-center my-4 text-foreground">
-        {title}
-      </h3>
+      <div className="relative flex items-center">
+        <h3 className="text-lg font-semibold mx-auto my-3 text-foreground">
+          {title}
+        </h3>
+        <div className="absolute right-4">
+          <DropdownMenu>
+              <DropdownMenuTrigger asChild className="">
+                <Button variant="ghost" size="sm" className="p-2">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="p-2 space-y-1">
+                {chartData.map(d => (
+                  <label key={d.week} className="flex items-center gap-2">
+                    <Checkbox
+                      className="h-4 w-4 rounded-none"
+                      checked={visibleWeeks.includes(d.week)}
+                      onCheckedChange={checked => {
+                        setVisibleWeeks(v =>
+                          checked
+                            ? [...v, d.week]
+                            : v.filter(w => w !== d.week)
+                        );
+                      }}
+                    />
+                    <span className="select-none">Week {d.week}</span>
+                  </label>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+          <BarChart data={filteredData} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+            <CartesianGrid
+              stroke="hsl(var(--muted-foreground))"
+              vertical={false}
+              strokeOpacity={0.8}
+              strokeWidth={.2}
+              strokeDasharray="3 3"
+            />
             <XAxis 
               dataKey="week" 
               axisLine={false}
@@ -116,7 +169,16 @@ export const MetricChart: React.FC<MetricChartProps> = ({
               radius={[2, 2, 0, 0]}
               maxBarSize={40}
             >
-              <LabelList dataKey="planned" position="top" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 12 }} />
+              {filteredData.map(d => (
+                <Cell
+                  key={`planned-${d.week}`}
+                  // if it's currentWeek, draw dotted outline
+                  strokeDasharray={d.week === currentWeek ? "3 3" : undefined}
+                  stroke={d.week === currentWeek ? "#1e3a8a" : undefined}
+                  fill={d.week === currentWeek ? "transparent" : "hsl(var(--chart-planned))"}
+                />
+              ))}
+              <LabelList dataKey="planned" position="top" stroke="" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 12 }} />
             </Bar>
             <Bar 
               dataKey="actual" 

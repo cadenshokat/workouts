@@ -1,5 +1,14 @@
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LabelList } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LabelList, Cell, CartesianGrid } from "recharts";
 import { OverallWeeklyMetrics } from "@/hooks/useOverallData";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Filter } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
 
 interface OverallMetricChartProps {
   data: OverallWeeklyMetrics[];
@@ -36,6 +45,13 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
     });
   }
 
+  const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
+    useEffect(() => {
+      setVisibleWeeks(chartData.map(d => d.week));
+    }, [chartData]);
+  
+  const filteredData = chartData.filter(d => visibleWeeks.includes(d.week));
+
   const formatValue = (value: number) => {
     if (value == null) return "";
     const formatted = value.toLocaleString("en-US");
@@ -46,13 +62,49 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
 
   return (
     <div className="bg-card rounded-lg border p-6">
-      <h3 className="text-lg font-semibold text-center mb-4 text-foreground">
-        {title}
-      </h3>
+      <div className="relative flex items-center">
+              <h3 className="text-lg font-semibold mx-auto my-3 text-foreground">
+                {title}
+              </h3>
+              <div className="absolute right-4">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild className="">
+                      <Button variant="ghost" size="sm" className="p-2">
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="p-2 space-y-1">
+                      {chartData.map(d => (
+                        <label key={d.week} className="flex items-center gap-2">
+                          <Checkbox
+                            className="h-4 w-4 rounded-none"
+                            checked={visibleWeeks.includes(d.week)}
+                            onCheckedChange={checked => {
+                              setVisibleWeeks(v =>
+                                checked
+                                  ? [...v, d.week]
+                                  : v.filter(w => w !== d.week)
+                              );
+                            }}
+                          />
+                          <span className="select-none">Week {d.week}</span>
+                        </label>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
       
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 5 }}>
+          <BarChart data={filteredData} margin={{ top: 20, right: 10, left: 0, bottom: 5 }}>
+            <CartesianGrid
+              stroke="hsl(var(--muted-foreground))"
+              vertical={false}
+              strokeOpacity={0.8}
+              strokeWidth={.2}
+              strokeDasharray="3 3"
+            />
             <XAxis 
               dataKey="week" 
               axisLine={false}
@@ -84,6 +136,15 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
               radius={[2, 2, 0, 0]}
               maxBarSize={40}
             >
+              
+            {filteredData.map(d => (
+              <Cell
+                key={`planned-${d.week}`}
+                strokeDasharray={d.week === currentWeek ? "3 3" : undefined}
+                stroke={d.week === currentWeek ? "#1e3a8a" : undefined}
+                fill={d.week === currentWeek ? "transparent" : "hsl(var(--chart-planned))"}
+              />
+            ))}
               <LabelList dataKey="planned" position="top" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 12 }} />
             </Bar>
             <Bar 
