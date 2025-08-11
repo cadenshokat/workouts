@@ -1,12 +1,22 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { supabase } from '@/integrations/supabase/client'
 import { Button } from "@/components/ui/button";
 import { Upload, FileSpreadsheet, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export const MasterData = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const { session } = useAuth()
+  const user = session?.user.id
   const { toast } = useToast();
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -22,7 +32,6 @@ export const MasterData = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
     const files = Array.from(e.dataTransfer.files);
     handleFiles(files);
   };
@@ -34,34 +43,40 @@ export const MasterData = () => {
 
   const handleFiles = async (files: File[]) => {
     if (files.length === 0) return;
-
-    const file = files[0];
     
-    // Validate file type
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a CSV file.",
-        variant: "destructive",
-      });
+    const file = files[0];
+
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      toast({ title: "Invalid file type", description: "Please upload a CSV file.", variant: "destructive" });
       return;
     }
 
     setIsUploading(true);
 
     try {
-      // Here you would typically upload the file to your backend
-      // For now, we'll just simulate an upload
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "File uploaded successfully",
-        description: `${file.name} has been processed.`,
+      const csvText = await file.text();
+      const headers: Record<string, string> = { "Content-Type": "text/csv" };
+      headers.Authorization = `Bearer ${session.access_token}`;
+
+      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/master-data`;
+
+      const resp = await fetch(fnUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'text/csv', 
+        },
+        body: csvText,
       });
-    } catch (error) {
+
+      toast({
+        title: "Import successful",
+        //description: `${upserted} rows upserted.`,
+      });
+    } catch (err: any) {
       toast({
         title: "Upload failed",
-        description: "Failed to upload file. Please try again.",
+        description: err.message,
         variant: "destructive",
       });
     } finally {
@@ -71,82 +86,19 @@ export const MasterData = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Master Data Upload</h2>
-        <p className="text-muted-foreground">
-          Upload your CSV file containing master data to update the system.
-        </p>
-      </div>
+      <h1 className="text-xl font-bold">Master Data Upload</h1>
 
-      {/* Upload Card */}
-      <Card className="w-full max-w-2xl mx-auto">
+        <Card className="w-full max-w-3xl mx-auto">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5" />
-            CSV File Upload
-          </CardTitle>
-          <CardDescription>
-            Upload your master data CSV file by dragging and dropping or clicking to browse.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div
-            className={`
-              border-2 border-dashed rounded-lg p-8 text-center transition-colors
-              ${isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}
-              ${isUploading ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50 hover:bg-primary/5'}
-            `}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            {isUploading ? (
-              <div className="space-y-4">
-                <div className="animate-spin mx-auto h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
-                <p className="text-muted-foreground">Uploading and processing file...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-                <div>
-                  <p className="text-lg font-medium text-foreground">
-                    Drag and drop your CSV file here
-                  </p>
-                  <p className="text-muted-foreground">
-                    or click to browse your files
-                  </p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => document.getElementById('file-input')?.click()}
-                >
-                  Browse Files
-                </Button>
-                <input
-                  id="file-input"
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Instructions Card */}
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-600">
-            <AlertCircle className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-amber-600 text-xl">
+            <AlertCircle className="h-4 w-4" />
             Important Guidelines
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            <h4 className="font-medium text-foreground">File Format Requirements:</h4>
-            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+            <h4 className="font-medium text-foreground text-md">File Format Requirements:</h4>
+            <ul className="list-hyphen list-inside space-y-1 text-sm text-muted-foreground">
               <li>File must be in CSV format (.csv)</li>
               <li>Ensure proper column formatting and naming</li>
               <li>Include all required data fields</li>
@@ -165,6 +117,52 @@ export const MasterData = () => {
           </div>
         </CardContent>
       </Card>
+        <div className="w-full max-w-3xl mx-auto">
+          <div
+            className={`
+              border-2 border-dashed rounded-lg p-8 text-center transition-colors
+              ${isDragOver ? "border-primary bg-primary/5" : "border-muted-foreground/25"}
+              ${isUploading ? "opacity-50 pointer-events-none" : "hover:border-primary/50 hover:bg-primary/5"}
+            `}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {isUploading ? (
+              <div className="space-y-4">
+                <div className="animate-spin mx-auto h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
+                <p className="text-muted-foreground">Uploading & processing…</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                <div>
+                  <p className="text-lg font-medium text-foreground">
+                    Drag & drop CSV here
+                  </p>
+                  <p className="text-muted-foreground">or click to browse</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    document.getElementById("file-input")?.click()
+                  }
+                >
+                  Browse Files
+                </Button>
+                <input
+                  id="file-input"
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      {/* Instructions Card */}
+      
     </div>
   );
 };
