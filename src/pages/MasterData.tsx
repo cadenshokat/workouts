@@ -87,37 +87,7 @@ export const MasterData = () => {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-xl font-bold">Master Data Upload</h1>
-
-        <Card className="w-full max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-600 text-xl">
-            <AlertCircle className="h-4 w-4" />
-            Important Guidelines
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            <h4 className="font-medium text-foreground text-md">File Format Requirements:</h4>
-            <ul className="list-hyphen list-inside space-y-1 text-sm text-muted-foreground">
-              <li>File must be in CSV format (.csv)</li>
-              <li>Ensure proper column formatting and naming</li>
-              <li>Include all required data fields</li>
-              <li>Remove any empty rows or columns</li>
-            </ul>
-          </div>
-          
-          <div className="space-y-2">
-            <h4 className="font-medium text-foreground">Data Validation:</h4>
-            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-              <li>Verify all numeric values are properly formatted</li>
-              <li>Check date formats are consistent</li>
-              <li>Ensure partner names match existing records</li>
-              <li>Review data for completeness before upload</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-        <div className="w-full max-w-3xl mx-auto">
+        <div className="w-full max-w-3xl mx-auto h-full">
           <div
             className={`
               border-2 border-dashed rounded-lg p-8 text-center transition-colors
@@ -131,19 +101,19 @@ export const MasterData = () => {
             {isUploading ? (
               <div className="space-y-4">
                 <div className="animate-spin mx-auto h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
-                <p className="text-muted-foreground">Uploading & processing…</p>
+                <p className="text-muted-foreground">processing</p>
               </div>
             ) : (
               <div className="space-y-4">
                 <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
                 <div>
-                  <p className="text-lg font-medium text-foreground">
+                  <p className="text-md font-medium text-foreground">
                     Drag & drop CSV here
                   </p>
-                  <p className="text-muted-foreground">or click to browse</p>
+                  <p className="text-muted-foreground text-md">or click to browse</p>
                 </div>
                 <Button
-                  variant="outline"
+                  variant="default"
                   onClick={() =>
                     document.getElementById("file-input")?.click()
                   }

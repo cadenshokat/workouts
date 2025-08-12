@@ -7,6 +7,7 @@ import { NotesPanel } from "@/components/NotesPanel";
 import { useOverallData } from "@/hooks/useOverallData";
 import { OverallMetricTable } from "@/components/tables/OverallMetricTable"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { getISOWeek } from "@/lib/iso-week"
 
 export const Overall = () => {
   const { data: overallData, isLoading, error } = useOverallData();
@@ -46,9 +47,9 @@ export const Overall = () => {
     );
   }
 
-  // Get the current week
-  const currentWeek = Math.max(...overallData.map(m => m.week_num), 30);
+  const currentWeek = getISOWeek(new Date());  
   const displayWeek = currentWeek + currentWeekOffset;
+
 
   const handlePreviousWeek = () => {
     setCurrentWeekOffset(prev => prev - 2);

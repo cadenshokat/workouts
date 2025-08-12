@@ -17,6 +17,7 @@ import {MetricTable} from "@/components/tables/MetricTable";
 import {LeversTable} from "@/components/tables/LeversTable";
 import { ApptsShare } from "@/components/charts/ApptsShare";
 import { useOverallData } from "@/hooks/useOverallData";
+import { getISOWeek } from "@/lib/iso-week"
 
 export default function PartnersPage() {
   const { partnerSlug } = useParams<{ partnerSlug: string }>();
@@ -64,8 +65,9 @@ export default function PartnersPage() {
       .map((m) => ({ name: m.manager_name, color: m.manager_color }))
       .filter((x) => x.name);
 
-  const currentWeek = Math.max(...metrics.map(m => m.week_num), 30);
+  const currentWeek = getISOWeek(new Date());  
   const displayWeek = currentWeek + currentWeekOffset;
+
 
   const handlePreviousWeek = () => {
     setCurrentWeekOffset(prev => prev - 2);
