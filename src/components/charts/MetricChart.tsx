@@ -172,7 +172,6 @@ export const MetricChart: React.FC<MetricChartProps> = ({
               {filteredData.map(d => (
                 <Cell
                   key={`planned-${d.week}`}
-                  // if it's currentWeek, draw dotted outline
                   strokeDasharray={d.week === currentWeek ? "3 3" : undefined}
                   stroke={d.week === currentWeek ? "#1e3a8a" : undefined}
                   fill={d.week === currentWeek ? "transparent" : "hsl(var(--chart-planned))"}

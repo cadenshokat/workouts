@@ -20,7 +20,7 @@ interface OverallMetricChartProps {
 export const OverallMetricChart = ({ data, metric, title, currentWeek }: OverallMetricChartProps) => {
   const chartData = [];
   
-  for (let i = currentWeek - 10; i <= currentWeek + 0; i++) {
+  for (let i = currentWeek - 8; i <= currentWeek + 4; i++) {
     const weekData = data.find(d => d.week_num === i);
     const isPastWeek = i <= currentWeek;
     
@@ -145,7 +145,7 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
                 fill={d.week === currentWeek ? "transparent" : "hsl(var(--chart-planned))"}
               />
             ))}
-              <LabelList dataKey="planned" position="top" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 12 }} />
+              <LabelList dataKey="planned" position="top" stroke="" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 12 }} />
             </Bar>
             <Bar 
               dataKey="actual" 
