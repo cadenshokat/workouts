@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Settings as SettingsIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SettingsDialog } from "@/components/SettingsDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { role } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -58,15 +60,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-6">
             <div className="text-right">
               <div className="flex justify-center items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSettingsOpen(true)}
-                  title="Settings (⌘/,)"
-                  className="rounded-xl"
-                >
-                  <SettingsIcon className="h-7 w-7" />
-                </Button>
+                {role == 'elevated' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSettingsOpen(true)}
+                    title="Settings (⌘/,)"
+                    className="rounded-xl"
+                  >
+                    <SettingsIcon className="h-7 w-7" />
+                  </Button>
+                )}
                 <LogoutButton />
               </div>
             </div>

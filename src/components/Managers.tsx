@@ -43,6 +43,12 @@ export function Managers() {
         setRows((r) => r.filter((m) => m.id !== id));
 
         try{
+            const { error: linkErr } = await supabase
+                .from("partner_managers")
+                .delete()
+                .eq("manager", id);
+            if (linkErr) throw linkErr;
+
             const { error } = await supabase.from('managers').delete().match({id})
             if (error) console.error('Could not find manager')
         } catch (e) {
