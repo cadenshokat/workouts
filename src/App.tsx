@@ -14,7 +14,6 @@ import Partners from "@/pages/Partners";
 import { Brand } from "@/pages/extras/Brand";
 import { Product } from "@/pages/extras/Product";
 import { Bizdev } from "@/pages/extras/Bizdev";
-import { Settings } from "@/pages/Settings";
 import LoginPage from "@/pages/Login";
 import { useAuth } from "./hooks/useAuth"
 import NotFound from "./pages/NotFound";
@@ -51,7 +50,6 @@ const App: React.FC = () => (
                         <MasterData />
                       </ProtectedRoute>
                     }/>
-                    <Route path="settings" element={<Settings />}/>
 
                     <Route path="partners/:partnerSlug" element={<Partners />}/>
 

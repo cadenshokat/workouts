@@ -30,25 +30,7 @@ export function useManagers() {
           .order("name", { ascending: true });
         if (mgrErr) throw mgrErr;
 
-        const { data: rels, error: relErr } = await supabase
-          .from("partner_managers")
-          .select(`
-            manager,
-            partners!inner(id, name)
-          `);
-        if (relErr) throw relErr;
-
-        const result = mgrs.map((m) => ({
-          ...m,
-          partners: rels
-            .filter((r) => r.manager === m.id)
-            .flatMap((r) =>
-              r.partners.map((p) => ({ id: p.id, name: p.name }))
-            ),
-        }))
-
-
-        if (!cancelled) setData(result);
+        if (!cancelled) setData(mgrs);
       } catch (err: any) {
         if (!cancelled) setError(err);
       } finally {
