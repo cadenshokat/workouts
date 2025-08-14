@@ -93,7 +93,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Weekly Summary</CardTitle>
@@ -144,27 +144,6 @@ export const Dashboard = () => {
                 <span className="text-sm text-muted-foreground">No data available</span>
               );
             })()}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>CPA Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-24">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData.slice(-4)}>
-                  <Line 
-                    type="monotone" 
-                    dataKey="cpa" 
-                    stroke="var(--color-cpa)" 
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartContainer>
           </CardContent>
         </Card>
       </div>
