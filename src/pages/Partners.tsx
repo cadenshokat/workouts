@@ -67,7 +67,7 @@ export default function PartnersPage() {
 
   const currentWeek = getISOWeek(new Date());  
   const displayWeek = currentWeek + currentWeekOffset;
-  const evenWeek = Math.max(2, displayWeek % 2 ? displayWeek - 1 : displayWeek);
+  const leversWeek = displayWeek % 2 === 0 ? displayWeek : Math.max(2, displayWeek - 1);
 
   const handlePreviousWeek = () => {
     setCurrentWeekOffset(prev => prev - 2);
@@ -198,11 +198,12 @@ export default function PartnersPage() {
         />
       )}
 
-      <LeversTable
+       <LeversTable
         levers={levers}
         partnerId={entry!.id}
-        weekNumber={displayWeek}
+        weekNumber={leversWeek}
         onUpdate={refetch}
+        title={`Levers – Week ${leversWeek}`}
       />
     </div>
   );

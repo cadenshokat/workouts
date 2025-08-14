@@ -16,6 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useAllPartners } from "@/hooks/useAllPartners";
 import { BarChart3, BarChart, TrendingUp, Users, Database, BriefcaseBusiness, Table2, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth"
+import { useMemo } from 'react'
 
 interface AppSidebarProps {
   selectedSection: string | null;
@@ -25,7 +26,7 @@ interface AppSidebarProps {
 const MAIN_ITEMS = [
   { title: "Dashboard", path: "/dashboard", icon: BarChart },
   { title: "Overall",   path: "/overall",   icon: TrendingUp },
-  { title: "Managers",  path: "/managers",  icon: Users },
+  //{ title: "Managers",  path: "/managers",  icon: Users },
 ];
 
 const RESTRICTED = [
@@ -57,19 +58,38 @@ export function AppSidebar() {
   const slugify = (s: string) =>
     s.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
 
-  const displayPartners: { id: string; name: string }[] = partners
-    ? partners.map((p) => ({ id: p.id, name: p.name }))
-    : PREDEFINED.map((name) => ({
-        id: name.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, ""),
-        name,
-      }));
+  const orderIndex = useMemo(() => {
+  const m = new Map<string, number>();
+  PREDEFINED.forEach((name, i) => m.set(name, i)); // exact match
+  return m;
+}, []);
+
+const rawPartners: { id: string; name: string }[] = partners
+  ? partners.map((p) => ({ id: p.id, name: p.name }))
+  : PREDEFINED.map((name) => ({ id: slugify(name), name }));
+
+  const displayPartners = useMemo(() => {
+  return rawPartners.slice().sort((a, b) => {
+    const ai = orderIndex.get(a.name);
+    const bi = orderIndex.get(b.name);
+
+    const aListed = ai !== undefined;
+    const bListed = bi !== undefined;
+
+    if (aListed && bListed) return (ai as number) - (bi as number);
+    if (aListed) return -1;
+    if (bListed) return 1;
+    return a.name.localeCompare(b.name); 
+  });
+}, [rawPartners, orderIndex]);
+
 
 
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
   `w-full flex items-center px-3 py-2 text-sm ${
     isActive
-      ? "bg-primary/10 text-lg font-medium"
+      ? "bg-primary/10 text-lg"
       : "hover:bg-accent"
   }`;
 
@@ -95,7 +115,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {MAIN_ITEMS.map((item) => (
-                <SidebarMenuItem key={item.title} className="text-lg font-bold">
+                <SidebarMenuItem key={item.title} className="text-lg">
                   <SidebarMenuButton asChild className="mb-1">
                     <NavLink to={item.path} end className={navClass}>
                       <item.icon
@@ -111,7 +131,7 @@ export function AppSidebar() {
               {role === 'elevated' && (
                 <>
                   {RESTRICTED.map((item) => (
-                    <SidebarMenuItem key={item.title} className="text-lg font-bold">
+                    <SidebarMenuItem key={item.title} className="text-lg">
                       <SidebarMenuButton asChild className="mb-1">
                         <NavLink to={item.path} end className={navClass}>
                           <item.icon
@@ -129,6 +149,30 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <Separator className="mb-2 h-[1px]" />
+        
+        <SidebarGroup>
+          <SidebarGroupContent>
+              <SidebarMenu>
+                {ITEMS.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild className="mb-1">
+                      <NavLink to={item.path} className={navClass}>
+                        <item.icon
+                          className={`h-4 w-4 ${
+                                collapsed ? "mx-auto" : "mr-3"
+                              }`}
+                        />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <Separator className="mb-2 h-[1px]" />
 
         <SidebarGroup>
@@ -165,32 +209,6 @@ export function AppSidebar() {
                         );
                       })
                     )}
-                  </SidebarMenu>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="brand">
-                <AccordionTrigger className="px-3 py-2 text-sm font-medium">
-                  Brand
-                </AccordionTrigger>
-                <AccordionContent>
-                  <SidebarMenu>
-                    {ITEMS.map((item) => (
-
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild className="mb-1">
-                          <NavLink to={item.path} className={navClass}>
-                            <item.icon
-                              className={`h-4 w-4 ${
-                                    collapsed ? "mx-auto" : "mr-3"
-                                  }`}
-                            />
-                            {!collapsed && <span>{item.title}</span>}
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
                   </SidebarMenu>
                 </AccordionContent>
               </AccordionItem>

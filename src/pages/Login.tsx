@@ -29,8 +29,8 @@ export default function LoginForm({ className, ...props }: React.ComponentPropsW
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `https://cadenshokat.github.io/workouts/`,
-          //redirectTo: `${window.location.origin}/api/auth/callback`,   
+          //redirectTo: `https://cadenshokat.github.io/workouts/`,
+          redirectTo: `${window.location.origin}/api/auth/callback`,   
         }
       })
 
