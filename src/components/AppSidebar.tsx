@@ -30,7 +30,6 @@ const MAIN_ITEMS = [
 
 const RESTRICTED = [
   { title: "Master Data", path: "/master-data", icon: Database },
-  { title: "Settings", path: "/settings", icon: Settings }
 ]
 
 const ITEMS = [

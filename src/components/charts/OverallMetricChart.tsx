@@ -17,40 +17,56 @@ interface OverallMetricChartProps {
   currentWeek: number;
 }
 
+type ChartRow = {
+  week: number;
+  actual: number | null;
+  planned: number | null;
+  isPast: boolean;
+};
+
+function arraysEqual(a: number[], b: number[]) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
 export const OverallMetricChart = ({ data, metric, title, currentWeek }: OverallMetricChartProps) => {
-  const chartData = [];
-  
-  for (let i = currentWeek - 8; i <= currentWeek + 4; i++) {
-    const weekData = data.find(d => d.week_num === i);
-    const isPastWeek = i <= currentWeek;
-    
-    let actualValue = null;
-    let plannedValue = null;
-    
-    if (weekData) {
-      if (metric === "appts_ocd") {
-        actualValue = isPastWeek ? weekData.appts_ocd_actual : null;
-        plannedValue = weekData.appts_ocd_bizplan;
-      } else if (metric === "cpa") {
-        actualValue = isPastWeek ? weekData.cpa_actual : null;
-        plannedValue = weekData.cpa_bizplan;
+  const chartData: ChartRow[] = useMemo(() => {
+    const rows: ChartRow[] = [];
+    for (let i = currentWeek - 8; i <= currentWeek + 4; i++) {
+      const weekData = data.find(d => d.week_num === i);
+      const isPastWeek = i <= currentWeek;
+
+      let actualValue: number | null = null;
+      let plannedValue: number | null = null;
+
+      if (weekData) {
+        if (metric === "appts_ocd") {
+          actualValue = isPastWeek ? weekData.appts_ocd_actual : null;
+          plannedValue = weekData.appts_ocd_bizplan;
+        } else {
+          actualValue = isPastWeek ? weekData.cpa_actual : null;
+          plannedValue = weekData.cpa_bizplan;
+        }
       }
+
+      rows.push({ week: i, actual: actualValue, planned: plannedValue, isPast: isPastWeek });
     }
-    
-    chartData.push({
-      week: i,
-      actual: actualValue,
-      planned: plannedValue,
-      isPast: isPastWeek,
-    });
-  }
+    return rows;
+  }, [data, metric, currentWeek]);
+
+  const defaultWeeks = useMemo(() => chartData.map(d => d.week), [chartData]);
 
   const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
     useEffect(() => {
-      setVisibleWeeks(chartData.map(d => d.week));
+      setVisibleWeeks(prev => (arraysEqual(prev, defaultWeeks) ? prev : defaultWeeks));
     }, [chartData]);
   
-  const filteredData = chartData.filter(d => visibleWeeks.includes(d.week));
+  const filteredData = useMemo(
+    () => chartData.filter(d => visibleWeeks.includes(d.week)),
+    [chartData, visibleWeeks]
+  );
+
 
   const formatValue = (value: number) => {
     if (value == null) return "";

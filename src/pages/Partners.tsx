@@ -67,7 +67,7 @@ export default function PartnersPage() {
 
   const currentWeek = getISOWeek(new Date());  
   const displayWeek = currentWeek + currentWeekOffset;
-
+  const evenWeek = Math.max(2, displayWeek % 2 ? displayWeek - 1 : displayWeek);
 
   const handlePreviousWeek = () => {
     setCurrentWeekOffset(prev => prev - 2);
