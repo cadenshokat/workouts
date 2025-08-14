@@ -11,10 +11,11 @@ interface LeversTableProps {
   levers: Lever[];
   partnerId: string;
   weekNumber: number;
+  title: string;
   onUpdate: () => void;
 }
 
-export const LeversTable = ({ levers, partnerId, weekNumber, onUpdate }: LeversTableProps) => {
+export const LeversTable = ({ levers, partnerId, weekNumber, onUpdate, title }: LeversTableProps) => {
   const [editingLevers, setEditingLevers] = useState<Record<string, Lever>>({});
   const [newLever, setNewLever] = useState({
     description:    "",
@@ -134,7 +135,7 @@ export const LeversTable = ({ levers, partnerId, weekNumber, onUpdate }: LeversT
   return (
     <div className="bg-card rounded-lg p-6">
       <Separator className="w-full mb-4" />
-      <h3 className="text-lg font-semibold mb-4 text-foreground">Levers</h3>
+      <h3 className="text-lg font-semibold mb-4 text-foreground">{title}</h3>
       
       <div className="overflow-x-auto">
         <table className="w-full">

@@ -49,7 +49,7 @@ export const Overall = () => {
 
   const currentWeek = getISOWeek(new Date());  
   const displayWeek = currentWeek + currentWeekOffset;
-
+  const leversWeek = displayWeek % 2 === 0 ? displayWeek : Math.max(2, displayWeek - 1);
 
   const handlePreviousWeek = () => {
     setCurrentWeekOffset(prev => prev - 2);
@@ -132,12 +132,12 @@ export const Overall = () => {
             />
             )}
       
-      {/* Levers Table - for overall section, use a generic partner ID */}
       <LeversTable
         levers={[]}
         partnerId="overall"
-        weekNumber={displayWeek}
+        weekNumber={leversWeek}
         onUpdate={() => {}}
+        title={`Levers - Week ${leversWeek}`}
       />
     </div>
   );

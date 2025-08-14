@@ -8,7 +8,6 @@ import Layout from "@/components/Layout"
 import { ProtectedRoute }   from '@/components/ProtectedRoute'
 import { Dashboard } from "@/pages/Dashboard";
 import { Overall } from "@/pages/Overall";
-import { Managers } from "@/pages/Managers";
 import { MasterData } from "@/pages/MasterData";
 import Partners from "@/pages/Partners";
 import { Brand } from "@/pages/extras/Brand";
@@ -44,7 +43,6 @@ const App: React.FC = () => (
 
                     <Route path="dashboard" element={<Dashboard />}/>
                     <Route path="overall" element={<Overall />}/>
-                    <Route path="managers" element={<Managers />}/>
                     <Route path="master-data" element={
                       <ProtectedRoute allowedRoles={['elevated']}>
                         <MasterData />
