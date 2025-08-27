@@ -33,7 +33,7 @@ function arraysEqual(a: number[], b: number[]) {
 export const OverallMetricChart = ({ data, metric, title, currentWeek }: OverallMetricChartProps) => {
   const chartData: ChartRow[] = useMemo(() => {
     const rows: ChartRow[] = [];
-    for (let i = currentWeek - 8; i <= currentWeek + 4; i++) {
+    for (let i = currentWeek - 6; i <= currentWeek + 2; i++) {
       const weekData = data.find(d => d.week_num === i);
       const isPastWeek = i <= currentWeek;
 
@@ -77,7 +77,7 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
    };
 
   return (
-    <div className="bg-card rounded-lg border p-6">
+    <div className="p-6">
       <div className="relative flex items-center">
               <h3 className="text-lg font-semibold mx-auto my-3 text-foreground">
                 {title}

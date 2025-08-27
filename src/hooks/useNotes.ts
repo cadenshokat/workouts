@@ -11,13 +11,19 @@ export interface Note {
   updated_at: string;
 }
 
-export const useNotes = (partnerId: string, weekNumber: number, yearNum: number = 2025) => {
+const currentYear = new Date().getFullYear();
+
+export const useNotes = (
+  partnerId: string,
+  weekNumber: number,
+  yearNum: number = currentYear
+) => {
   return useQuery({
     queryKey: ["notes", partnerId, weekNumber, yearNum],
     queryFn: async (): Promise<Note | null> => {
       const { data, error } = await supabase
         .from("notes")
-        .select("*")
+        .select("id, partner_id, week_number, year_num, content, created_at, updated_at")
         .eq("partner_id", partnerId)
         .eq("week_number", weekNumber)
         .eq("year_num", yearNum)
@@ -27,13 +33,12 @@ export const useNotes = (partnerId: string, weekNumber: number, yearNum: number 
         console.error("Error fetching note:", error);
         throw error;
       }
-
       return data;
     },
-    enabled: !!partnerId && !!weekNumber,
-    staleTime: Infinity,           
-    refetchOnWindowFocus: false,   
-    refetchOnReconnect: false,  
+    enabled: Boolean(partnerId) && Boolean(weekNumber),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     refetchOnMount: false,
   });
 };
@@ -45,23 +50,25 @@ export const useSaveNote = () => {
     mutationFn: async ({
       partnerId,
       weekNumber,
-      yearNum = 2024,
+      yearNum = currentYear,
       content,
     }: {
       partnerId: string;
       weekNumber: number;
       yearNum?: number;
       content: string;
-    }) => {
+    }): Promise<Note> => {
+      const payload = {
+        partner_id: partnerId,
+        week_number: weekNumber,
+        year_num: yearNum,
+        content,
+      };
+
       const { data, error } = await supabase
         .from("notes")
-        .upsert({
-          partner_id: partnerId,
-          week_number: weekNumber,
-          year_num: yearNum,
-          content,
-        })
-        .select()
+        .upsert(payload, { onConflict: "partner_id,week_number,year_num" })
+        .select("id, partner_id, week_number, year_num, content, created_at, updated_at")
         .single();
 
       if (error) {
@@ -69,11 +76,14 @@ export const useSaveNote = () => {
         throw error;
       }
 
-      return data;
+      return data as Note;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: ["notes", data.partner_id, data.week_number, data.year_num],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["notesHistory", data.partner_id, data.year_num],
       });
     },
   });

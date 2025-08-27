@@ -68,7 +68,7 @@ export const MetricChart: React.FC<MetricChartProps> = ({
       planned: number | null;
     }[] = [];
 
-    for (let w = currentWeek - 8; w <= currentWeek + 4; w++) {
+    for (let w = currentWeek - 6; w <= currentWeek + 2; w++) {
       const row = data.find((d) => d.week_num === w);
       arr.push({
         week: w,
@@ -95,7 +95,7 @@ export const MetricChart: React.FC<MetricChartProps> = ({
    };
 
   return (
-    <div className="bg-card rounded-lg border">
+    <div className="">
       <div className="relative flex items-center">
         <h3 className="text-lg font-semibold mx-auto my-3 text-foreground">
           {title}
@@ -128,9 +128,9 @@ export const MetricChart: React.FC<MetricChartProps> = ({
             </DropdownMenu>
           </div>
         </div>
-      <div className="h-64">
+      <div className="h-[320px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={filteredData} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+          <BarChart data={filteredData} margin={{ top: 20, right: 10, left: -10, bottom: 5 }}>
             <CartesianGrid
               stroke="hsl(var(--muted-foreground))"
               vertical={false}
@@ -142,12 +142,12 @@ export const MetricChart: React.FC<MetricChartProps> = ({
               dataKey="week" 
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+              tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
             />
             <YAxis 
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+              tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
               tickFormatter={formatValue}
             />
            <Tooltip
@@ -177,7 +177,7 @@ export const MetricChart: React.FC<MetricChartProps> = ({
                   fill={d.week === currentWeek ? "transparent" : "hsl(var(--chart-planned))"}
                 />
               ))}
-              <LabelList dataKey="planned" position="top" stroke="" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 12 }} />
+              <LabelList dataKey="planned" position="top" stroke="" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 11 }} />
             </Bar>
             <Bar 
               dataKey="actual" 
@@ -185,12 +185,12 @@ export const MetricChart: React.FC<MetricChartProps> = ({
               radius={[2, 2, 0, 0]}
               maxBarSize={40}
             >
-              <LabelList dataKey="actual" position="top" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 12 }} />
+              <LabelList dataKey="actual" position="top" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 11 }} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex justify-center gap-6 my-4 text-sm text-muted-foreground">
+      <div className="flex justify-center gap-6 my-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <span className="w-3 h-3 bg-chart-planned rounded-full" />
           Bizplan

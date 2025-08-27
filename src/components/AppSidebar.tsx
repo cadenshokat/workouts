@@ -97,7 +97,7 @@ const rawPartners: { id: string; name: string }[] = partners
   return (
     <Sidebar
       className={`transition-all duration-75 ${
-        collapsed ? "w-14" : "w-60"
+        collapsed ? "w-14" : "w-52"
       } border-r border-sidebar-border bg-white`}
       collapsible="icon"
     >
