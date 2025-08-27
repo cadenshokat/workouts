@@ -75,10 +75,10 @@ export const MetricTable: React.FC<MetricTableProps> = ({ data, currentWeek, onC
   ];
 
   return (
-    <Table>
+    <Table className="w-full mt-4">
       <TableHeader>
         <TableRow>
-          <TableHead className="w-1/7 text-left">Week</TableHead>
+          <TableHead className="w-1/7 text-center">Week</TableHead>
           {columns.map(c => (
             <TableHead key={c.key} className="w-1/7 text-center">{c.label}</TableHead>
           ))}
@@ -87,7 +87,7 @@ export const MetricTable: React.FC<MetricTableProps> = ({ data, currentWeek, onC
       <TableBody>
         {rows.map(row => (
           <TableRow key={row.week}>
-            <TableCell className="text-left p-1">Week {row.week}</TableCell>
+            <TableCell className="text-center p-1">Week {row.week}</TableCell>
             {columns.map(col => {
               const isEditing = editing?.week === row.week && editing.key === col.key;
               const value = (row as any)[col.key] as number|null;

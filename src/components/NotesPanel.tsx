@@ -1,7 +1,11 @@
-// src/components/NotesPanel.tsx
 import { useEffect, useMemo, useState } from "react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +25,7 @@ interface NotesPanelProps {
   yearNum?: number;
 }
 
-// --- lightweight history hook (past notes for partner/year) ---
+// --- types for lightweight history hook ---
 type NoteRow = {
   id: string;
   partner_id: string;
@@ -32,6 +36,9 @@ type NoteRow = {
   created_at: string | null;
 };
 
+const currentYear = new Date().getFullYear();
+
+// fetch past notes for this partner/year
 function useNotesHistory(partnerId: string, yearNum: number) {
   return useQuery({
     queryKey: ["notesHistory", partnerId, yearNum],
@@ -46,7 +53,7 @@ function useNotesHistory(partnerId: string, yearNum: number) {
       if (error) throw error;
       return (data || []) as NoteRow[];
     },
-    enabled: !!partnerId && !!yearNum,
+    enabled: Boolean(partnerId) && Boolean(yearNum),
   });
 }
 
@@ -54,7 +61,7 @@ export const NotesPanel = ({
   partnerId,
   partnerName,
   weekNumber,
-  yearNum = 2024,
+  yearNum = currentYear,
 }: NotesPanelProps) => {
   const [content, setContent] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -64,26 +71,31 @@ export const NotesPanel = ({
 
   const { toast } = useToast();
 
-  // Current-week note
-  const { data: note, isLoading: loadingCurrent } = useNotes(partnerId, weekNumber, yearNum);
+  const { data: note, isLoading: loadingCurrent } = useNotes(
+    partnerId,
+    weekNumber,
+    yearNum
+  );
+
   const saveNote = useSaveNote();
 
-  // History
-  const { data: history = [], isLoading: loadingHistory } = useNotesHistory(partnerId, yearNum);
+  const {
+    data: history = [],
+    isLoading: loadingHistory,
+    isError: historyError,
+  } = useNotesHistory(partnerId, yearNum);
 
-  // Preload content when opening
   const handleOpen = () => {
     setContent(note?.content || "");
     setActiveTab("this");
     setIsOpen(true);
   };
 
-  // If the current note arrives after open (first time), initialize content only when empty
   useEffect(() => {
     if (isOpen && !content && note?.content) {
       setContent(note.content);
     }
-  }, [isOpen, note?.content]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, note?.content]);
 
   const handleSave = async () => {
     try {
@@ -104,7 +116,7 @@ export const NotesPanel = ({
 
   const filteredHistory = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const base = history.filter((n) => n.week_number !== weekNumber); // hide this-week entry in history
+    const base = history.filter((n) => n.week_number !== weekNumber); 
     if (!q) return base;
     return base.filter((n) => (n.content || "").toLowerCase().includes(q));
   }, [history, search, weekNumber]);
@@ -114,12 +126,7 @@ export const NotesPanel = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleOpen}
-        className="ml-2"
-      >
+      <Button variant="outline" size="sm" onClick={handleOpen} className="ml-2">
         <FileText className="h-4 w-4 mr-1" />
         Notes
       </Button>
@@ -127,21 +134,21 @@ export const NotesPanel = ({
       <DialogContent className="max-w-[900px] w-full p-0 overflow-hidden rounded-2xl">
         <DialogHeader className="px-6 pt-6">
           <DialogTitle className="text-lg">
-            Notes — {partnerName} (Week {weekNumber})
+            Notes — {partnerName} (Week {weekNumber}, {yearNum})
           </DialogTitle>
           <DialogDescription className="sr-only">
             View and edit this week’s notes and browse previous weeks.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="px-6">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "this" | "history")} className="px-6">
           <TabsList className="mb-4">
             <TabsTrigger value="this">This week</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="history" disabled={historyError}>
+              History
+            </TabsTrigger>
           </TabsList>
 
-          {/* This week editor */}
           <TabsContent value="this" className="space-y-3">
             <div className="text-xs text-muted-foreground">
               Last saved: {prettyDate(note?.updated_at)}
@@ -151,11 +158,10 @@ export const NotesPanel = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="min-h-[260px] resize-none"
-              disabled={loadingCurrent}
+              disabled={loadingCurrent || saveNote.isPending}
             />
 
             <div className="flex items-center justify-between">
-              {/* Quick actions (optional): import from last week if blank */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -163,15 +169,21 @@ export const NotesPanel = ({
                   const last = history.find((h) => h.week_number < weekNumber);
                   if (last?.content) {
                     setContent((prev) => (prev ? prev + "\n\n" + last.content : last.content!));
-                    toast({ title: "Inserted", description: `Copied content from week ${last.week_number}.` });
+                    toast({
+                      title: "Inserted",
+                      description: `Copied content from week ${last.week_number}.`,
+                    });
                   }
                 }}
+                disabled={loadingHistory || history.length === 0}
               >
                 <Copy className="h-4 w-4 mr-2" /> Insert last week
               </Button>
 
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setIsOpen(false)} disabled={saveNote.isPending}>
+                  Cancel
+                </Button>
                 <Button onClick={handleSave} disabled={saveNote.isPending}>
                   <Save className="h-4 w-4 mr-2" />
                   {saveNote.isPending ? "Saving..." : "Save Note"}
@@ -180,16 +192,15 @@ export const NotesPanel = ({
             </div>
           </TabsContent>
 
-          {/* History tab: left list + right preview */}
           <TabsContent value="history" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4">
-              {/* Left: searchable list */}
               <div className="border rounded-lg">
                 <div className="p-3 border-b">
                   <Input
                     placeholder="Search past notes…"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
+                    disabled={loadingHistory}
                   />
                 </div>
                 <ScrollArea className="h-[320px]">
@@ -226,7 +237,6 @@ export const NotesPanel = ({
                 </ScrollArea>
               </div>
 
-              {/* Right: preview + insert */}
               <div className="border rounded-lg p-3 min-h-[320px]">
                 {!previewId ? (
                   <div className="text-sm text-muted-foreground p-2">
@@ -253,7 +263,10 @@ export const NotesPanel = ({
                           if (!text) return;
                           setContent((prev) => (prev ? prev + "\n\n" + text : text));
                           setActiveTab("this");
-                          toast({ title: "Inserted", description: "Copied into this week’s editor." });
+                          toast({
+                            title: "Inserted",
+                            description: "Copied into this week’s editor.",
+                          });
                         }}
                       >
                         <Copy className="h-4 w-4 mr-2" />
@@ -267,9 +280,7 @@ export const NotesPanel = ({
           </TabsContent>
         </Tabs>
 
-        <DialogFooter className="px-6 pb-6">
-          {/* Optional global footer; we already have actions in the tabs. Leave empty for clean look. */}
-        </DialogFooter>
+        <DialogFooter className="px-6 pb-6" />
       </DialogContent>
     </Dialog>
   );

@@ -48,7 +48,7 @@ export const ApptsShare: React.FC<ApptsShareProps> = ({
   const fmtPct = (v: number) => `${(v * 100).toFixed(1)}%`
 
   return (
-    <div className="bg-card rounded-lg border">
+    <div className="">
       <h3 className="text-lg font-semibold text-center my-4 text-foreground">
         APPTS SHARE
       </h3>

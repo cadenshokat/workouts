@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import Spinner from "@/components/Spinner";
 import { useAllPartners } from "@/hooks/useAllPartners";
@@ -9,8 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Table as TableIcon, ChartBar } from "lucide-react";
-import { WeekFilter } from "@/components/WeekFilter"
+import { ChevronLeft, ChevronRight, Table as TableIcon, ChartBar, LineChartIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import {NotesPanel} from "@/components/NotesPanel";
 import {MetricChart} from "@/components/charts/MetricChart";
 import {MetricTable} from "@/components/tables/MetricTable";
@@ -18,6 +18,9 @@ import {LeversTable} from "@/components/tables/LeversTable";
 import { ApptsShare } from "@/components/charts/ApptsShare";
 import { useOverallData } from "@/hooks/useOverallData";
 import { getISOWeek } from "@/lib/iso-week"
+import { MetricLineChart } from "@/components/charts/MetricLineChart"
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 export default function PartnersPage() {
   const { partnerSlug } = useParams<{ partnerSlug: string }>();
@@ -39,8 +42,9 @@ export default function PartnersPage() {
 
   const { data: overallData, isLoading, error } = useOverallData();
 
-  const [viewMode, setViewMode] = useState<"chart" | "table">("chart");
+  const [viewMode, setViewMode] = useState<"chart" | "table" | "line">("chart");
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [leverQuery, setLeverQuery] = useState("");
 
   const {
     data: window,
@@ -67,7 +71,38 @@ export default function PartnersPage() {
 
   const currentWeek = getISOWeek(new Date());  
   const displayWeek = currentWeek + currentWeekOffset;
-  const leversWeek = displayWeek % 2 === 0 ? displayWeek : Math.max(2, displayWeek - 1);
+  const toWorkoutWeek = (w: number) => (w % 2 === 0 ? w : Math.max(2, w - 1));
+
+  const baseWeek = toWorkoutWeek(displayWeek);
+
+  const leverWeeks = levers
+    .map((l: { week_number?: number }) => l.week_number)
+    .filter((w): w is number => typeof w === "number" && !Number.isNaN(w));
+
+  const minWeek = leverWeeks.length ? Math.min(...leverWeeks) : 2;
+  const earliestWorkoutWeek = Math.max(2, toWorkoutWeek(minWeek));
+
+  const workoutWeeks: number[] = [];
+  for (let w = baseWeek; w >= earliestWorkoutWeek; w -= 2) {
+    workoutWeeks.push(w);
+  }
+
+  const q = leverQuery.trim().toLowerCase();
+  const digitPart = q.replace(/\D+/g, ""); 
+  const filteredWorkoutWeeks = q
+    ? workoutWeeks.filter((week) => {
+        const weekMatch =
+          digitPart.length > 0 && week.toString().includes(digitPart);
+        const textMatch = levers.some(
+          (l) =>
+            l.week_number === week &&
+            (l.description || "")
+              .toLowerCase()
+              .includes(q)
+        );
+        return weekMatch || textMatch;
+      })
+    : workoutWeeks;
 
   const handlePreviousWeek = () => {
     setCurrentWeekOffset(prev => prev - 2);
@@ -94,9 +129,9 @@ export default function PartnersPage() {
 
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="space-y-4">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center mt-4 gap-4">
+        <div className="flex items-center gap-4 ml-6">
           <h1 className="text-xl font-bold">{name}</h1>
           {managerBadges.length > 0 && (
             <div className="flex gap-1 mt-1">
@@ -113,36 +148,47 @@ export default function PartnersPage() {
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex justify-center">
           <ToggleGroup
             type="single"
             value={viewMode}
-            onValueChange={(v: "table" | "chart") => v && setViewMode(v)}
-            className="inline-flex bg-muted rounded-full"
+            onValueChange={(v) => v && setViewMode(v as "chart" | "line" | "table")}
+            className="inline-flex rounded-full bg-muted p-1 shadow-sm"
           >
-            <ToggleGroupItem value="chart" aria-label="Chart view">
-              <ChartBar className="h-4 w-4" />
+            <ToggleGroupItem
+              value="chart"
+              aria-label="Bar view"
+              className="h-8 w-10 rounded-sm transition-colors data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            >
+              <ChartBar className="h-full w-full" />
             </ToggleGroupItem>
-            <ToggleGroupItem value="table" aria-label="Table view">
+
+            <ToggleGroupItem
+              value="line"
+              aria-label="Line view"
+              className="h-8 w-10 rounded-full transition-colors data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            >
+              <LineChartIcon className="h-4 w-4" />
+            </ToggleGroupItem>
+
+            <ToggleGroupItem
+              value="table"
+              aria-label="Table view"
+              className="h-8 w-10 rounded-full transition-colors data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            >
               <TableIcon className="h-4 w-4" />
             </ToggleGroupItem>
           </ToggleGroup>
+        </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePreviousWeek}
-          >
+        <div className="flex items-center justify-end gap-4 mr-6">
+          <Button variant="outline" size="sm" onClick={handlePreviousWeek}>
             <ChevronLeft className="h-2 w-2" />
           </Button>
           <div className="px-4 py-2 bg-primary text-sm text-primary-foreground rounded-md font-semibold">
             Week {displayWeek}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextWeek}
-          >
+          <Button variant="outline" size="sm" onClick={handleNextWeek}>
             <ChevronRight className="h-2 w-2" />
           </Button>
 
@@ -157,8 +203,8 @@ export default function PartnersPage() {
       {viewMode === "chart" ? (
         <div className={
           isCRMPartner
-            ? "grid grid-cols-1 lg:grid-cols-2 gap-4"
-            : "grid grid-cols-1 lg:grid-cols-3 gap-4"
+            ? "grid grid-cols-[1fr_auto_1fr] gap-x-2 items-stretch"
+            : "grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-x-2 pt-4 items-stretch"
           }
         >
           <MetricChart
@@ -167,6 +213,8 @@ export default function PartnersPage() {
             title="APPTS"
             currentWeek={displayWeek}
           />
+         
+          <Separator orientation="vertical" className="h-full" />
           {isCRMPartner ? (
             <ApptsShare
               partnerMetrics={metrics}
@@ -181,6 +229,7 @@ export default function PartnersPage() {
               title="CPL"
               currentWeek={displayWeek}
             />
+            <Separator orientation="vertical" className="h-full w-[.5px]" />
             <MetricChart
               data={metrics}
               metric="cpa"
@@ -190,6 +239,26 @@ export default function PartnersPage() {
           </>
           )}
         </div>
+      ) : viewMode === "line" ? (
+          <div
+            className={
+              isCRMPartner
+                ? "grid grid-cols-[1fr_auto_1fr] gap-x-2 items-stretch"
+                : "grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-x-2 pt-4 items-stretch"
+            }
+          >
+            <MetricLineChart data={metrics} metric="appts" title="APPTS" currentWeek={displayWeek} />
+            <Separator orientation="vertical" className="h-full" />
+            {isCRMPartner ? (
+              <ApptsShare partnerMetrics={metrics} allMetrics={overallData} currentWeek={displayWeek} />
+            ) : (
+              <>
+                <MetricLineChart data={metrics} metric="cpl" title="CPL" currentWeek={displayWeek} />
+                <Separator orientation="vertical" className="h-full" />
+                <MetricLineChart data={metrics} metric="cpa" title="CPA" currentWeek={displayWeek} />
+              </>
+            )}
+          </div>
       ) : (
         <MetricTable 
           data={metrics} 
@@ -197,14 +266,45 @@ export default function PartnersPage() {
           onCellUpdate={handleCellUpdate}
         />
       )}
-
-       <LeversTable
-        levers={levers}
-        partnerId={entry!.id}
-        weekNumber={leversWeek}
-        onUpdate={refetch}
-        title={`Levers – Week ${leversWeek}`}
-      />
-    </div>
+        <Separator />
+        <div className="pt-2 px-6">
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="relative w-full max-w-md">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={leverQuery}
+                onChange={(e) => setLeverQuery(e.target.value)}
+                placeholder="Search levers or week number…"
+                className="pl-8"
+              />
+            </div>
+            {leverQuery && (
+              <Button variant="ghost" onClick={() => setLeverQuery("")}>
+                Clear
+              </Button>
+            )}
+            <span className="text-xs text-muted-foreground">
+              {filteredWorkoutWeeks.length} result{filteredWorkoutWeeks.length === 1 ? "" : "s"}
+            </span>
+          </div>
+        </div>
+       {filteredWorkoutWeeks.length === 0 ? (
+          <div className="px-6 py-8 text-sm text-muted-foreground">
+            No matching weeks or levers.
+          </div>
+        ) : (
+          filteredWorkoutWeeks.map((week, idx) => (
+            <LeversTable
+              key={week}
+              levers={levers}
+              partnerId={entry!.id}
+              weekNumber={week}
+              onUpdate={refetch}
+              title={`Levers – Week ${week}${idx === 0 && workoutWeeks[0] === week ? " (Current)" : ""}`}
+              highlightQuery={leverQuery}
+            />
+          ))
+        )}
+      </div>
   );
 }
