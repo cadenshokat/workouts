@@ -65,9 +65,9 @@ export const OverallMetricLineChart = ({
           plannedValue = weekData.appts_ocd_bizplan;
         } else {
           actualCosts = isPastWeek ? weekData.costs_actual : null;
-          actualValue = actualCosts  > 0 ? actualCosts  / weekData.appts_ocd_actual  : 0;
+          actualValue = Math.round(actualCosts  > 0 ? actualCosts  / weekData.appts_ocd_actual  : 0);
           plannedCosts = weekData.costs_bizplan;
-          plannedValue = plannedCosts > 0 ? plannedCosts / weekData.appts_ocd_bizplan : 0;
+          plannedValue = Math.round(plannedCosts > 0 ? plannedCosts / weekData.appts_ocd_bizplan : 0);
         }
       }
 
