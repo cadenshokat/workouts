@@ -50,7 +50,7 @@ export const Dashboard = () => {
   const { currentRow, prevRow } = useMemo(() => {
     if (!overallData || overallData.length === 0) return { currentRow: undefined, prevRow: undefined };
     const byKey = (w: number, y: number) =>
-      overallData.find((r) => r.week_num === w && r.year_num === y);
+      overallData.find((r) => r.week_num === w - 1 && r.year_num === y);
 
     let cur = byKey(fixedEvenWeek, rawYear) ?? overallData[overallData.length - 1];
     let prev: typeof cur | undefined;
@@ -184,7 +184,7 @@ export const Dashboard = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
         <div className="text-sm text-muted-foreground">
-          Current Workout Week: {currentRow?.week_num ?? fixedEvenWeek} ({currentRow?.year_num ?? rawYear})
+          Workout Week: {fixedEvenWeek} ({currentRow?.year_num ?? rawYear})
         </div>
       </div>
 
@@ -195,7 +195,7 @@ export const Dashboard = () => {
           <div className="pb-2">
             <h1 className="text-sm font-medium flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              APPTS vs Plan
+              APPTS vs Plan (current week)
             </h1>
           </div>
           <div>
@@ -220,7 +220,7 @@ export const Dashboard = () => {
           <div className="pb-2">
             <h1 className="text-sm font-medium flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              CPA vs Plan
+              CPA vs Plan (current week)
             </h1>
           </div>
           <div>
