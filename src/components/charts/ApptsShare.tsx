@@ -33,8 +33,8 @@ export const ApptsShare: React.FC<ApptsShareProps> = ({
       const partBizplan  = p?.appts_lcd_bizplan  ?? 0
       const totalBizplan = t?.appts_lcd_bizplan  ?? 0
 
-      const actualShare = totalActual  > 0 ? partActual  / totalActual  : 0
-      const planShare   = totalBizplan > 0 ? partBizplan / totalBizplan : 0
+      const actualShare = Math.round(totalActual  > 0 ? partActual  / totalActual  : 0)
+      const planShare   = Math.round(totalBizplan > 0 ? partBizplan / totalBizplan : 0)
 
       return {
         week:        wk,
