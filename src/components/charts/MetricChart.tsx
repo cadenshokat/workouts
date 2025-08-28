@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
+import { getISOWeek } from "@/lib/iso-week";
 
 interface MetricChartProps {
   data: WeeklyMetrics[];
@@ -85,6 +86,11 @@ export const MetricChart: React.FC<MetricChartProps> = ({
   }, [chartData]);
 
   const filteredData = chartData.filter(d => visibleWeeks.includes(d.week));
+
+  const realIsoWeek = getISOWeek(new Date());
+  const fixedCurrentWeek =
+    realIsoWeek % 2 === 0 ? realIsoWeek : realIsoWeek === 53 ? 52 : realIsoWeek + 1;
+
 
   const formatValue = (value: number) => {
     if (value == null) return "";
@@ -172,9 +178,9 @@ export const MetricChart: React.FC<MetricChartProps> = ({
               {filteredData.map(d => (
                 <Cell
                   key={`planned-${d.week}`}
-                  strokeDasharray={d.week === currentWeek ? "3 3" : undefined}
-                  stroke={d.week === currentWeek ? "#1e3a8a" : undefined}
-                  fill={d.week === currentWeek ? "transparent" : "hsl(var(--chart-planned))"}
+                  strokeDasharray={d.week === fixedCurrentWeek ? "3 3" : undefined}
+                  stroke={d.week === fixedCurrentWeek ? "#1e3a8a" : undefined}
+                  fill={d.week === fixedCurrentWeek ? "transparent" : "hsl(var(--chart-planned))"}
                 />
               ))}
               <LabelList dataKey="planned" position="top" stroke="" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 11 }} />

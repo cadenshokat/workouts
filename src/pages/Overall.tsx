@@ -84,8 +84,10 @@ export const Overall = () => {
     );
   }
 
-  const currentWeek = getISOWeek(new Date());
-  const displayWeek = currentWeek + currentWeekOffset;
+  const currentWeek = getISOWeek(new Date());  
+  const fixedCurrentWeek = currentWeek % 2 === 0 ? currentWeek : currentWeek === 53 ? 52 : currentWeek + 1;
+  
+  const displayWeek = fixedCurrentWeek + currentWeekOffset;
   const toWorkoutWeek = (w: number) => (w % 2 === 0 ? w : Math.max(2, w - 1));
   const baseWeek = toWorkoutWeek(displayWeek);
 
@@ -245,7 +247,7 @@ export const Overall = () => {
             partnerId="overall"
             weekNumber={week}
             onUpdate={refreshLevers}
-            title={`Levers – Week ${week}${idx === 0 && workoutWeeks[0] === week ? " (Current)" : ""}`}
+            title={`Levers – Week ${week}${week === fixedCurrentWeek ? " (Current)" : ""}`}
             highlightQuery={leverQuery}
           />
         ))

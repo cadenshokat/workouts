@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
+import { getISOWeek } from "@/lib/iso-week";
 
 interface OverallMetricChartProps {
   data: OverallWeeklyMetrics[];
@@ -39,14 +40,18 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
 
       let actualValue: number | null = null;
       let plannedValue: number | null = null;
+      let actualCosts: number | null = null;
+      let plannedCosts: number | null = null;
 
       if (weekData) {
         if (metric === "appts_ocd") {
           actualValue = isPastWeek ? weekData.appts_ocd_actual : null;
           plannedValue = weekData.appts_ocd_bizplan;
         } else {
-          actualValue = isPastWeek ? weekData.cpa_actual : null;
-          plannedValue = weekData.cpa_bizplan;
+          actualCosts = isPastWeek ? weekData.costs_actual : null;
+          actualValue = actualCosts  > 0 ? actualCosts  / weekData.appts_ocd_actual  : 0;
+          plannedCosts = weekData.costs_bizplan;
+          plannedValue = plannedCosts > 0 ? plannedCosts / weekData.appts_ocd_bizplan : 0;
         }
       }
 
@@ -56,6 +61,9 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
   }, [data, metric, currentWeek]);
 
   const defaultWeeks = useMemo(() => chartData.map(d => d.week), [chartData]);
+  const realIsoWeek = getISOWeek(new Date());
+  const fixedCurrentWeek =
+    realIsoWeek % 2 === 0 ? realIsoWeek : realIsoWeek === 53 ? 52 : realIsoWeek + 1;
 
   const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
     useEffect(() => {
@@ -156,9 +164,9 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
             {filteredData.map(d => (
               <Cell
                 key={`planned-${d.week}`}
-                strokeDasharray={d.week === currentWeek ? "3 3" : undefined}
-                stroke={d.week === currentWeek ? "#1e3a8a" : undefined}
-                fill={d.week === currentWeek ? "transparent" : "hsl(var(--chart-planned))"}
+                strokeDasharray={d.week === fixedCurrentWeek ? "3 3" : undefined}
+                stroke={d.week === fixedCurrentWeek ? "#1e3a8a" : undefined}
+                fill={d.week === fixedCurrentWeek ? "transparent" : "hsl(var(--chart-planned))"}
               />
             ))}
               <LabelList dataKey="planned" position="top" stroke="" formatter={(value) => formatValue(value)} style={{ fill: "#333", fontSize: 12 }} />
