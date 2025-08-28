@@ -10,13 +10,14 @@ export interface OverallWeeklyMetrics {
   appts_lcd_bizplan: number;
   cpa_actual: number;
   cpa_bizplan: number;
+  costs_actual: number;
+  costs_bizplan: number;
 }
 
 export const useOverallData = () => {
   return useQuery({
     queryKey: ["overallData"],
     queryFn: async (): Promise<OverallWeeklyMetrics[]> => {
-      // Query the all_data table directly using raw SQL
       const { data, error } = await supabase
         .from('all_data' as any)
         .select('*')
@@ -36,6 +37,8 @@ export const useOverallData = () => {
         appts_lcd_bizplan: row.appts_lcd_bizplan || 0,
         cpa_actual: row.cpa_actual || 0,
         cpa_bizplan: row.cpa_bizplan || 0,
+        costs_actual: row.costs_actual || 0,
+        costs_bizplan: row.costs_bizplan || 0
       }));
     },
   });

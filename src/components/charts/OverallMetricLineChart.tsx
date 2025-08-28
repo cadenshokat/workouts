@@ -56,14 +56,18 @@ export const OverallMetricLineChart = ({
 
       let actualValue: number | null = null;
       let plannedValue: number | null = null;
+      let actualCosts: number | null = null;
+      let plannedCosts: number | null = null;
 
       if (weekData) {
         if (metric === "appts_ocd") {
           actualValue = isPastWeek ? weekData.appts_ocd_actual : null;
           plannedValue = weekData.appts_ocd_bizplan;
         } else {
-          actualValue = isPastWeek ? weekData.cpa_actual : null;
-          plannedValue = weekData.cpa_bizplan;
+          actualCosts = isPastWeek ? weekData.costs_actual : null;
+          actualValue = actualCosts  > 0 ? actualCosts  / weekData.appts_ocd_actual  : 0;
+          plannedCosts = weekData.costs_bizplan;
+          plannedValue = plannedCosts > 0 ? plannedCosts / weekData.appts_ocd_bizplan : 0;
         }
       }
 

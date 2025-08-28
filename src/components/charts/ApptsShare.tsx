@@ -23,7 +23,6 @@ export const ApptsShare: React.FC<ApptsShareProps> = ({
   currentWeek,
 }) => {
   const chartData = useMemo(() => {
-    // build weeks array [currentWeek-10 … currentWeek]
     return Array.from({ length: 11 }, (_, i) => {
       const wk = currentWeek - 10 + i
       const p  = partnerMetrics.find((d) => d.week_num === wk)
@@ -68,7 +67,7 @@ export const ApptsShare: React.FC<ApptsShareProps> = ({
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-              domain={[0, 1]}
+              domain={[0, (dataMax: number) => Math.min(1, Math.max(0.01, dataMax) * 1.2)]}
               tickFormatter={fmtPct}
             />
             <Tooltip
