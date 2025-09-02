@@ -45,10 +45,10 @@ export const ApptsShare: React.FC<ApptsShareProps> = ({
       const p  = partnerMetrics.find(d => d.week_num === wk);
       const t  = allMetrics   .find(d => d.week_num === wk);
 
-      const partActual   = p?.appts_lcd_actual   ?? null;
-      const totalActual  = t?.appts_lcd_actual   ?? null;
-      const partBizplan  = p?.appts_lcd_bizplan  ?? null;
-      const totalBizplan = t?.appts_lcd_bizplan  ?? null;
+      const partActual   = p?.appts_ocd_actual   ?? null;
+      const totalActual  = t?.appts_ocd_actual   ?? null;
+      const partBizplan  = p?.appts_ocd_bizplan  ?? null;
+      const totalBizplan = t?.appts_ocd_bizplan  ?? null;
 
       return {
         week: wk,

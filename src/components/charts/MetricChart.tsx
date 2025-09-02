@@ -38,8 +38,8 @@ type MetricMap = {
 
 const METRIC_MAP: MetricMap = {
   appts: {
-    actualKey: "appts_lcd_actual",
-    plannedKey: "appts_lcd_bizplan",
+    actualKey: "appts_ocd_actual",
+    plannedKey: "appts_ocd_bizplan",
     format: (n) => `${n}`,
   },
   cpl: {

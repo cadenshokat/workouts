@@ -51,10 +51,10 @@ export const ApptsShareLine: React.FC<ApptsShareLineProps> = ({
       const p = partnerMetrics.find((d) => d.week_num === w);
       const t = allMetrics.find((d) => d.week_num === w);
 
-      const partActual = p?.appts_lcd_actual ?? null;
-      const totalActual = t?.appts_lcd_actual ?? null;
-      const partBizplan = p?.appts_lcd_bizplan ?? null;
-      const totalBizplan = t?.appts_lcd_bizplan ?? null;
+      const partActual = p?.appts_ocd_actual ?? null;
+      const totalActual = t?.appts_ocd_actual ?? null;
+      const partBizplan = p?.appts_ocd_bizplan ?? null;
+      const totalBizplan = t?.appts_ocd_bizplan ?? null;
 
       rows.push({
         week: w,

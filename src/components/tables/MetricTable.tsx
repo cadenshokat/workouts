@@ -34,8 +34,8 @@ export const MetricTable: React.FC<MetricTableProps> = ({ data, currentWeek, onC
     const w = data.find(d => d.week_num === i);
     rows.push({
       id: w?.id ?? "", week: i,
-      appts_lcd_actual: w?.appts_lcd_actual ?? null,
-      appts_lcd_bizplan: w?.appts_lcd_bizplan ?? null,
+      appts_ocd_actual: w?.appts_ocd_actual ?? null,
+      appts_ocd_bizplan: w?.appts_ocd_bizplan ?? null,
       cpl_actual: w?.cpl_actual ?? null,
       cpl_bizplan: w?.cpl_bizplan ?? null,
       cpa_actual: w?.cpa_actual ?? null,
@@ -65,8 +65,8 @@ export const MetricTable: React.FC<MetricTableProps> = ({ data, currentWeek, onC
   };
 
   const columns: Array<{ label: string; key: CellKey }> = [
-    { label: "Appts LCD (actual)", key: "appts_lcd_actual" },
-    { label: "Appts LCD (bizplan)", key: "appts_lcd_bizplan" },
+    { label: "Appts OCD (actual)", key: "appts_ocd_actual" },
+    { label: "Appts OCD (bizplan)", key: "appts_ocd_bizplan" },
     { label: "CPL (actual)",        key: "cpl_actual" },
     { label: "CPL (bizplan)",       key: "cpl_bizplan" },
     { label: "CPA (actual)",        key: "cpa_actual" },
