@@ -7,7 +7,7 @@ type PartnerWeekRow = {
   partner: string;
   week_num: number;
   year_num: number;
-  appts_lcd_actual: number | null;
+  appts_ocd_actual: number | null;
 };
 
 export function useApptShare(currentWeek: CurrentWeek) {
@@ -32,7 +32,7 @@ export function useApptShare(currentWeek: CurrentWeek) {
 
         const { data: rows = [], error: qErr } = await supabase
           .from("partner_data")
-          .select("partner, week_num, year_num, appts_lcd_actual")
+          .select("partner, week_num, year_num, appts_ocd_actual")
           .eq("week_num", currentWeek.week_num - 3)
           .eq("year_num", currentWeek.year_num);
 
@@ -45,7 +45,7 @@ export function useApptShare(currentWeek: CurrentWeek) {
         }
 
         const mapped = (rows as PartnerWeekRow[])
-          .map(r => ({ name: r.partner, value: Math.max(0, r.appts_lcd_actual ?? 0) }))
+          .map(r => ({ name: r.partner, value: Math.max(0, r.appts_ocd_actual ?? 0) }))
           .filter(s => s.value > 0)
           .sort((a, b) => b.value - a.value);
 

@@ -7,8 +7,8 @@ export interface WeeklyMetrics {
   week_num: number;
   partner: string;
   year_num: number;
-  appts_lcd_actual: number;
-  appts_lcd_bizplan: number;
+  appts_ocd_actual: number;
+  appts_ocd_bizplan: number;
   cpl_actual: number;
   cpl_bizplan: number;
   cpa_actual: number;
