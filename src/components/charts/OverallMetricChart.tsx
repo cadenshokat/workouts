@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LabelList, Cell, CartesianGrid } from "recharts";
-import { OverallWeeklyMetrics } from "@/hooks/useOverallData";
+import { OverallWeeklyMetrics } from "@/hooks/useOverall";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Filter } from "lucide-react";
