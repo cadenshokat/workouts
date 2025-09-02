@@ -8,9 +8,7 @@ import {
   Tooltip,
   CartesianGrid,
   ReferenceLine,
-  LabelList,
 } from "recharts";
-import { OverallWeeklyMetrics } from "@/hooks/useOverallData";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Filter } from "lucide-react";
@@ -19,91 +17,77 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
+import type { WeeklyMetrics } from "@/hooks/usePartnerData";
+import type { OverallWeeklyMetrics } from "@/hooks/useOverallData";
 
-interface OverallMetricLineChartProps {
-  data: OverallWeeklyMetrics[];
-  metric: "appts_ocd" | "cpa";
-  title: string;
+interface ApptsShareLineProps {
+  partnerMetrics: WeeklyMetrics[];
+  allMetrics: OverallWeeklyMetrics[];
   currentWeek: number;
+  title?: string;
   chartHeight?: number;
 }
 
-type ChartRow = {
-  week: number;
-  actual: number | null;
-  planned: number | null;
-  isPast: boolean;
+const safeShare = (
+  part: number | null | undefined,
+  total: number | null | undefined
+) => {
+  if (part == null) return 0;
+  if (total == null || total === 0) return null;
+  const v = part / total;
+  return Number.isFinite(v) ? v : null;
 };
 
-function arraysEqual(a: number[], b: number[]) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
-  return true;
-}
-
-export const OverallMetricLineChart = ({
-  data,
-  metric,
-  title,
+export const ApptsShareLine: React.FC<ApptsShareLineProps> = ({
+  partnerMetrics,
+  allMetrics,
   currentWeek,
-  chartHeight = 256,
-}: OverallMetricLineChartProps) => {
-  const safeCPA = (costs: number | null | undefined, appts: number | null | undefined) => {
-    if (costs == null || appts == null) return 0;
-    if (appts <= 0) return 0; 
-    const v = costs / appts;
-    return Number.isFinite(v) ? Math.round(v) : 0;
-  };
+  title = "APPTS SHARE",
+  chartHeight = 320,
+}) => {
+  const chartData = useMemo(() => {
+    const rows: { week: number; actual: number | null; planned: number | null }[] = [];
+    for (let w = currentWeek - 4; w <= currentWeek + 4; w++) {
+      const p = partnerMetrics.find((d) => d.week_num === w);
+      const t = allMetrics.find((d) => d.week_num === w);
 
-  const chartData: ChartRow[] = useMemo(() => {
-    const rows: ChartRow[] = [];
-    for (let i = currentWeek - 4; i <= currentWeek + 4; i++) {
-      const weekData = data.find((d) => d.week_num === i);
-      const isPastWeek = i <= currentWeek;
-
-      let actualValue: number | null = null;
-      let plannedValue: number | null = null;
-
-      if (weekData) {
-        if (metric === "appts_ocd") {
-          actualValue = isPastWeek ? weekData.appts_ocd_actual : null;
-          plannedValue = weekData.appts_ocd_bizplan;
-        } else {
-          actualValue = isPastWeek? safeCPA(weekData.costs_actual, weekData.appts_ocd_actual) : null;
-          plannedValue = safeCPA(weekData.costs_bizplan, weekData.appts_ocd_bizplan);
-        }
-      }
+      const partActual = p?.appts_lcd_actual ?? null;
+      const totalActual = t?.appts_lcd_actual ?? null;
+      const partBizplan = p?.appts_lcd_bizplan ?? null;
+      const totalBizplan = t?.appts_lcd_bizplan ?? null;
 
       rows.push({
-        week: i,
-        actual: actualValue,
-        planned: plannedValue,
-        isPast: isPastWeek,
+        week: w,
+        actual: safeShare(partActual, totalActual),
+        planned: safeShare(partBizplan, totalBizplan),
       });
     }
     return rows;
-  }, [data, metric, currentWeek]);
-
-  const defaultWeeks = useMemo(() => chartData.map((d) => d.week), [chartData]);
+  }, [partnerMetrics, allMetrics, currentWeek]);
 
   const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
   useEffect(() => {
-    setVisibleWeeks((prev) => (arraysEqual(prev, defaultWeeks) ? prev : defaultWeeks));
-  }, [defaultWeeks]);
+    setVisibleWeeks(chartData.map((d) => d.week));
+  }, [chartData]);
 
   const filteredData = useMemo(
     () => chartData.filter((d) => visibleWeeks.includes(d.week)),
     [chartData, visibleWeeks]
   );
 
-  const formatValue = (value: number) => {
-    if (value == null) return "";
-    const formatted = value.toLocaleString("en-US");
-    return metric === "appts_ocd" ? formatted : `$${formatted}`;
-  };
+  const fmtPct = (v?: number | null) =>
+    v == null ? "" : `${(v * 100).toFixed(1)}%`;
+
+  const yMax = Math.min(
+    1,
+    Math.max(
+      0.05,
+      filteredData.reduce((m, r) => Math.max(m, r.actual ?? 0, r.planned ?? 0), 0)
+    ) * 1.2
+  );
 
   return (
-    <div className="p-6 mt-4">
+    <div>
       <div className="relative flex items-center">
         <h3 className="text-lg font-semibold mx-auto my-3 text-foreground">{title}</h3>
         <div className="absolute right-4">
@@ -119,11 +103,11 @@ export const OverallMetricLineChart = ({
                   <Checkbox
                     className="h-4 w-4 rounded-none"
                     checked={visibleWeeks.includes(d.week)}
-                    onCheckedChange={(checked) => {
+                    onCheckedChange={(checked) =>
                       setVisibleWeeks((v) =>
                         checked ? [...v, d.week] : v.filter((w) => w !== d.week)
-                      );
-                    }}
+                      )
+                    }
                   />
                   <span className="select-none">Week {d.week}</span>
                 </label>
@@ -133,7 +117,7 @@ export const OverallMetricLineChart = ({
         </div>
       </div>
 
-      <div style={{ height: chartHeight }}>
+      <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <RechartsLineChart
             data={filteredData}
@@ -150,18 +134,19 @@ export const OverallMetricLineChart = ({
               dataKey="week"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
             />
             <YAxis
+              domain={[0, yMax]}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => formatValue(v as number)}
+              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+              tickFormatter={(v) => fmtPct(v as number)}
             />
             <Tooltip
               formatter={(value: any, name: string) => [
-                value != null ? formatValue(value) : "No data",
-                name === "planned" ? "Bizplan" : "Actual",
+                value != null ? fmtPct(value as number) : "No data",
+                name === "planned" ? "Bizplan Share" : "Actual Share",
               ]}
               labelFormatter={(label) => `Week ${label}`}
               contentStyle={{
@@ -172,7 +157,7 @@ export const OverallMetricLineChart = ({
               }}
             />
 
-            {/* dashed marker at current week */}
+            {/* dashed vertical line at the current week */}
             <ReferenceLine
               x={currentWeek}
               stroke="#1e3a8a"
@@ -190,7 +175,6 @@ export const OverallMetricLineChart = ({
               connectNulls
               name="planned"
             />
-              
             <Line
               type="monotone"
               dataKey="actual"
@@ -201,19 +185,18 @@ export const OverallMetricLineChart = ({
               connectNulls
               name="actual"
             />
-             
           </RechartsLineChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="flex justify-center gap-6 mt-4">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-chart-planned rounded" />
-          <span className="text-sm text-muted-foreground">Bizplan</span>
+      <div className="flex justify-center gap-6 my-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <span className="w-3 h-3 bg-chart-planned rounded-full" />
+          Bizplan Share
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-chart-actual rounded" />
-          <span className="text-sm text-muted-foreground">Actual</span>
+        <div className="flex items-center gap-1">
+          <span className="w-3 h-3 bg-chart-actual rounded-full" />
+          Actual Share
         </div>
       </div>
     </div>

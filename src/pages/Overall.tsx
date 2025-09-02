@@ -42,7 +42,7 @@ export const Overall = () => {
     const { data, error } = await supabase
       .from("levers")
       .select("*")
-      .eq("partner_id", "overall")
+      .eq("partner_id", "e01d35db-1330-4d8b-a71f-5696fceeef8d")
       .order("week_number", { ascending: true });
     if (!error && data) setLevers(data as Lever[]);
   };
@@ -244,7 +244,7 @@ export const Overall = () => {
           <LeversTable
             key={week}
             levers={levers}
-            partnerId="overall"
+            partnerId="e01d35db-1330-4d8b-a71f-5696fceeef8d"
             weekNumber={week}
             onUpdate={refreshLevers}
             title={`Levers – Week ${week}${week === fixedCurrentWeek ? " (Current)" : ""}`}

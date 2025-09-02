@@ -69,7 +69,7 @@ export const MetricChart: React.FC<MetricChartProps> = ({
       planned: number | null;
     }[] = [];
 
-    for (let w = currentWeek - 6; w <= currentWeek + 2; w++) {
+    for (let w = currentWeek - 4; w <= currentWeek + 4; w++) {
       const row = data.find((d) => d.week_num === w);
       arr.push({
         week: w,
@@ -81,6 +81,7 @@ export const MetricChart: React.FC<MetricChartProps> = ({
   }, [data, actualKey, plannedKey, currentWeek]);
 
   const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
+  
   useEffect(() => {
     setVisibleWeeks(chartData.map(d => d.week));
   }, [chartData]);
@@ -134,7 +135,7 @@ export const MetricChart: React.FC<MetricChartProps> = ({
             </DropdownMenu>
           </div>
         </div>
-      <div className="h-[320px] w-full">
+      <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={filteredData} margin={{ top: 20, right: 10, left: -10, bottom: 5 }}>
             <CartesianGrid

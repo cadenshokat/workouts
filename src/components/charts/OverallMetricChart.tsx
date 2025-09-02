@@ -32,26 +32,29 @@ function arraysEqual(a: number[], b: number[]) {
 }
 
 export const OverallMetricChart = ({ data, metric, title, currentWeek }: OverallMetricChartProps) => {
+  const safeCPA = (costs: number | null | undefined, appts: number | null | undefined) => {
+    if (costs == null || appts == null) return null;
+    if (appts <= 0) return null; 
+    const v = costs / appts;
+    return Number.isFinite(v) ? Math.round(v) : null;
+  };
+
   const chartData: ChartRow[] = useMemo(() => {
     const rows: ChartRow[] = [];
-    for (let i = currentWeek - 6; i <= currentWeek + 2; i++) {
+    for (let i = currentWeek - 4; i <= currentWeek + 4; i++) {
       const weekData = data.find(d => d.week_num === i);
       const isPastWeek = i <= currentWeek;
 
       let actualValue: number | null = null;
       let plannedValue: number | null = null;
-      let actualCosts: number | null = null;
-      let plannedCosts: number | null = null;
 
       if (weekData) {
         if (metric === "appts_ocd") {
           actualValue = isPastWeek ? weekData.appts_ocd_actual : null;
           plannedValue = weekData.appts_ocd_bizplan;
         } else {
-          actualCosts = isPastWeek ? weekData.costs_actual : null;
-          actualValue = Math.round(actualCosts  > 0 ? actualCosts  / weekData.appts_ocd_actual  : 0);
-          plannedCosts = weekData.costs_bizplan;
-          plannedValue = Math.round(plannedCosts > 0 ? plannedCosts / weekData.appts_ocd_bizplan : 0);
+          actualValue = isPastWeek? safeCPA(weekData.costs_actual, weekData.appts_ocd_actual) : null;
+          plannedValue = safeCPA(weekData.costs_bizplan, weekData.appts_ocd_bizplan);
         }
       }
 
