@@ -14,7 +14,7 @@ import { NavLink, useLocation } from "react-router-dom"
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAllPartners } from "@/hooks/useAllPartners";
-import { BarChart3, BarChart, TrendingUp, Users, Database, BriefcaseBusiness, Table2, Settings } from "lucide-react";
+import { BarChart3, BarChart, TrendingUp, Users, Database, BriefcaseBusiness, Table2, Globe } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth"
 import { useMemo } from 'react'
 
@@ -35,7 +35,7 @@ const RESTRICTED = [
 
 const ITEMS = [
   { title: "Brand", path: "/extras/brand", icon: Table2 },
-  { title: "Product", path: "/extras/product", icon: TrendingUp },
+  { title: "Product", path: "/extras/product", icon: Globe },
   { title: "Bizdev", path: "/extras/bizdev", icon: BriefcaseBusiness }
 ]
 
@@ -60,7 +60,7 @@ export function AppSidebar() {
 
   const orderIndex = useMemo(() => {
   const m = new Map<string, number>();
-  PREDEFINED.forEach((name, i) => m.set(name, i)); // exact match
+  PREDEFINED.forEach((name, i) => m.set(name, i));
   return m;
 }, []);
 
@@ -97,13 +97,15 @@ const rawPartners: { id: string; name: string }[] = partners
   return (
     <Sidebar
       className={`transition-all duration-75 ${
-        collapsed ? "w-14" : "w-52"
+        collapsed ? "w-16" : "w-52"
       } border-r border-sidebar-border bg-white`}
       collapsible="icon"
     >
-      <div className="flex items-center justify-between mb-[15px]">
-        <span className="ml-16 mt-4">
-          <img src={`${import.meta.env.BASE_URL}logo.svg`} className="h-8 w-25"/>
+      <div className="p-4">
+        <span className="flex items-center justify-center">
+          {collapsed ? (<img src={`${import.meta.env.BASE_URL}download.png`} className="h-8 w-8"/>) : (
+            <img src={`${import.meta.env.BASE_URL}logo.svg`} className="h-8 w-25"/>
+          )}
         </span>
         
       </div>

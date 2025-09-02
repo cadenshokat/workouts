@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableHeader,
@@ -31,7 +30,7 @@ export const MetricTable: React.FC<MetricTableProps> = ({ data, currentWeek, onC
   const canEdit = role === "elevated";
 
   const rows = [];
-  for (let i = currentWeek - 10; i <= currentWeek; i++) {
+  for (let i = currentWeek - 4; i <= currentWeek + 4; i++) {
     const w = data.find(d => d.week_num === i);
     rows.push({
       id: w?.id ?? "", week: i,

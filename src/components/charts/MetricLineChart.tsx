@@ -51,7 +51,7 @@ export const MetricLineChart: React.FC<MetricLineChartProps> = ({
 
   const chartData = useMemo(() => {
     const arr: { week: number; actual: number | null; planned: number | null }[] = [];
-    for (let w = currentWeek - 6; w <= currentWeek + 2; w++) {
+    for (let w = currentWeek - 4; w <= currentWeek + 4; w++) {
       const row = data.find((d) => d.week_num === w);
       arr.push({
         week: w,
@@ -106,7 +106,7 @@ export const MetricLineChart: React.FC<MetricLineChartProps> = ({
         </div>
       </div>
 
-      <div style={{ height: chartHeight }}>
+      <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <RechartsLineChart
             data={filteredData}

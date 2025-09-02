@@ -19,6 +19,7 @@ import { ApptsShare } from "@/components/charts/ApptsShare";
 import { useOverallData } from "@/hooks/useOverallData";
 import { getISOWeek } from "@/lib/iso-week"
 import { MetricLineChart } from "@/components/charts/MetricLineChart"
+import { ApptsShareLine } from "@/components/charts/ApptsShareLineChart";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
@@ -253,7 +254,7 @@ export default function PartnersPage() {
             <MetricLineChart data={metrics} metric="appts" title="APPTS" currentWeek={displayWeek} />
             <Separator orientation="vertical" className="h-full" />
             {isCRMPartner ? (
-              <ApptsShare partnerMetrics={metrics} allMetrics={overallData} currentWeek={displayWeek} />
+              <ApptsShareLine partnerMetrics={metrics} allMetrics={overallData} currentWeek={displayWeek} />
             ) : (
               <>
                 <MetricLineChart data={metrics} metric="cpl" title="CPL" currentWeek={displayWeek} />
