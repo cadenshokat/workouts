@@ -53,11 +53,21 @@ export const MetricLineChart: React.FC<MetricLineChartProps> = ({
     const arr: { week: number; actual: number | null; planned: number | null }[] = [];
     for (let w = currentWeek - 4; w <= currentWeek + 4; w++) {
       const row = data.find((d) => d.week_num === w);
-      arr.push({
-        week: w,
-        actual: row && w <= currentWeek ? (row[actualKey] as number) : null,
-        planned: row ? (row[plannedKey] as number) : null,
-      });
+
+      let actual: number | null = null;
+      let planned: number | null = null;
+      
+      if (row) {
+        if (w === currentWeek) {
+          actual = 0;
+          planned = row[plannedKey] as number;
+        } else {
+          actual = w < currentWeek ? (row[actualKey] as number) : null;
+          planned = row[plannedKey] as number;
+        }
+      }
+
+      arr.push({ week: w, actual, planned });
     }
     return arr;
   }, [data, actualKey, plannedKey, currentWeek]);
