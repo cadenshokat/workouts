@@ -13,7 +13,7 @@ import { OverallMetricLineChart } from "@/components/charts/OverallMetricLineCha
 import { OverallMetricTable } from "@/components/tables/OverallMetricTable";
 import { LeversTable } from "@/components/tables/LeversTable";
 import { NotesPanel } from "@/components/NotesPanel";
-import { useOverallData } from "@/hooks/useOverallData";
+import { useOverallData } from "@/hooks/useOverall";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { getISOWeek } from "@/lib/iso-week";
 import { supabase } from "@/integrations/supabase/client";
