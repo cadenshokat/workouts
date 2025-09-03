@@ -17,7 +17,7 @@ import {
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
 import type { WeeklyMetrics } from "@/hooks/usePartnerData";
-import type { OverallWeeklyMetrics } from "@/hooks/useOverallData";
+import type { OverallWeeklyMetrics } from "@/hooks/useOverall";
 
 interface ApptsShareProps {
   partnerMetrics: WeeklyMetrics[]
