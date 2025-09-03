@@ -69,6 +69,9 @@ export const MetricChart: React.FC<MetricChartProps> = ({
       planned: number | null;
     }[] = [];
 
+    const realIsoWeek = getISOWeek(new Date());
+    const realCurrentWorkoutWeek = realIsoWeek % 2 === 0 ? realIsoWeek : realIsoWeek === 53 ? 52 : realIsoWeek + 1;
+
     for (let w = currentWeek - 4; w <= currentWeek + 4; w++) {
       const row = data.find((d) => d.week_num === w);
 
@@ -76,12 +79,14 @@ export const MetricChart: React.FC<MetricChartProps> = ({
       let planned: number | null = null;
 
       if (row) {
-        if (w === currentWeek) {
-          actual = 0;
-          planned = row[plannedKey] as number;
+        planned = row[plannedKey] as number;
+
+        if (w < realCurrentWorkoutWeek) {
+          actual = row[actualKey] as number;
+        } else if (w === realCurrentWorkoutWeek) {
+          actual = 0; 
         } else {
-          actual = w < currentWeek ? (row[actualKey] as number) : null;
-          planned = row[plannedKey] as number;
+          actual = null;
         }
       }
 
