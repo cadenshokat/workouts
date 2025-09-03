@@ -39,44 +39,75 @@ export const OverallMetricChart = ({ data, metric, title, currentWeek }: Overall
     return Number.isFinite(v) ? Math.round(v) : null;
   };
 
+  const toWorkoutWeek = (w: number) => (w % 2 === 0 ? w : Math.max(2, w - 1));
+
+   const realIsoWeek = getISOWeek(new Date());
+  const realCurrentWorkoutWeek = realIsoWeek % 2 === 0 ? realIsoWeek : realIsoWeek === 53 ? 52 : realIsoWeek + 1;
+
+  const windowWeeks = useMemo(() => {
+    const raw = [];
+    for (let i = currentWeek - 4; i <= currentWeek + 4; i++) raw.push(i);
+    return raw.filter((w, idx) => raw.indexOf(w) === idx);
+  }, [currentWeek]);
+
   const chartData: ChartRow[] = useMemo(() => {
-    const rows: ChartRow[] = [];
-    for (let i = currentWeek - 4; i <= currentWeek + 4; i++) {
-      const weekData = data.find(d => d.week_num === i);
-      const isPastWeek = i <= currentWeek;
+    return windowWeeks.map((w) => {
+      const row = data.find(d => d.week_num === w);
 
-      let actualValue: number | null = null;
-      let plannedValue: number | null = null;
+      let actual: number | null = null;
+      let planned: number | null = null;
 
-      if (weekData) {
+      if (row) {
+        // compute values per metric
         if (metric === "appts_ocd") {
-          actualValue = isPastWeek ? weekData.appts_ocd_actual : null;
-          plannedValue = weekData.appts_ocd_bizplan;
+          planned = row.appts_ocd_bizplan ?? null;
+
+          if (w < realCurrentWorkoutWeek) {
+            // past weeks: show actuals
+            actual = row.appts_ocd_actual ?? null;
+          } else if (w === realCurrentWorkoutWeek) {
+            // current real week: hide or zero actuals to avoid implying completeness
+            actual = 0; // or use `row.appts_ocd_actual ?? 0` if you want partial bars
+          } else {
+            // future weeks
+            actual = null;
+          }
         } else {
-          actualValue = isPastWeek? safeCPA(weekData.costs_actual, weekData.appts_ocd_actual) : null;
-          plannedValue = safeCPA(weekData.costs_bizplan, weekData.appts_ocd_bizplan);
+          planned = safeCPA(row.costs_bizplan, row.appts_ocd_bizplan);
+
+          if (w < realCurrentWorkoutWeek) {
+            actual = safeCPA(row.costs_actual, row.appts_ocd_actual);
+          } else if (w === realCurrentWorkoutWeek) {
+            actual = 0; // or safeCPA(row.costs_actual, row.appts_ocd_actual) if you want partial
+          } else {
+            actual = null;
+          }
         }
       }
 
-      rows.push({ week: i, actual: actualValue, planned: plannedValue, isPast: isPastWeek });
-    }
-    return rows;
-  }, [data, metric, currentWeek]);
+      const isPast = w < realCurrentWorkoutWeek;
+      return { week: w, actual, planned, isPast };
+    });
+  }, [data, metric, windowWeeks, realCurrentWorkoutWeek]);
+
+
+  const IsoWeek = getISOWeek(new Date());
+  const fixedCurrentWeek =
+    IsoWeek % 2 === 0 ? IsoWeek : IsoWeek === 53 ? 52 : IsoWeek + 1;
 
   const defaultWeeks = useMemo(() => chartData.map(d => d.week), [chartData]);
-  const realIsoWeek = getISOWeek(new Date());
-  const fixedCurrentWeek =
-    realIsoWeek % 2 === 0 ? realIsoWeek : realIsoWeek === 53 ? 52 : realIsoWeek + 1;
 
   const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
-    useEffect(() => {
-      setVisibleWeeks(prev => (arraysEqual(prev, defaultWeeks) ? prev : defaultWeeks));
-    }, [chartData]);
-  
+  useEffect(() => {
+    // reset to new default when the window changes
+    setVisibleWeeks(defaultWeeks);
+  }, [defaultWeeks]);
+
   const filteredData = useMemo(
     () => chartData.filter(d => visibleWeeks.includes(d.week)),
     [chartData, visibleWeeks]
   );
+
 
 
   const formatValue = (value: number) => {
