@@ -70,6 +70,26 @@ export default function PartnersPage() {
       .map((m) => ({ name: m.manager_name, color: m.manager_color }))
       .filter((x) => x.name);
 
+  {/* Even Workout Weeks */}
+  /*  UNCOMMENT FOR EVEN WEEKS
+    const currentWeek = getISOWeek(new Date());  
+    const fixedCurrentWeek =
+      currentWeek % 2 === 0 ? currentWeek : currentWeek === 53 ? 52 : currentWeek + 1;
+
+    const displayWeek = fixedCurrentWeek + currentWeekOffset;
+    const toWorkoutWeek = (w: number) => (w % 2 === 0 ? w : Math.max(2, w - 1));
+
+    const baseWeek = toWorkoutWeek(displayWeek);
+
+    const leverWeeks = levers
+      .map((l: { week_number?: number }) => l.week_number)
+      .filter((w): w is number => typeof w === "number" && !Number.isNaN(w));
+
+    const minWeek = leverWeeks.length ? Math.min(...leverWeeks) : 2;
+    const earliestWorkoutWeek = Math.max(2, toWorkoutWeek(minWeek));
+  */
+
+  {/* Odd Workout Weeks */}
   const currentWeek = getISOWeek(new Date());
   const fixedCurrentWeek =
     currentWeek % 2 === 1 ? currentWeek : Math.max(1, currentWeek - 1);
