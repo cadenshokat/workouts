@@ -18,7 +18,6 @@ interface LeversTableProps {
   highlightQuery?: string;
 }
 
-// --- highlight helpers ---
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const highlight = (
