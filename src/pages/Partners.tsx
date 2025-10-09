@@ -131,7 +131,6 @@ export default function PartnersPage() {
     }
   };
 
-
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center mt-4 gap-4">
