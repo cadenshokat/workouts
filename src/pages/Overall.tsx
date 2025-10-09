@@ -84,6 +84,8 @@ export const Overall = () => {
     );
   }
 
+  {/* Even Workout Weeks */}
+  /*
   const currentWeek = getISOWeek(new Date());  
   const fixedCurrentWeek = currentWeek % 2 === 0 ? currentWeek : currentWeek === 53 ? 52 : currentWeek + 1;
   
@@ -97,6 +99,27 @@ export const Overall = () => {
 
   const minWeek = leverWeeks.length ? Math.min(...leverWeeks) : 2;
   const earliestWorkoutWeek = Math.max(2, toWorkoutWeek(minWeek));
+
+  const workoutWeeks: number[] = [];
+  for (let w = baseWeek; w >= earliestWorkoutWeek; w -= 2) workoutWeeks.push(w);
+  */
+
+  {/* Odd Workout Weeks */}
+  const currentWeek = getISOWeek(new Date());
+  const fixedCurrentWeek =
+    currentWeek % 2 === 1 ? currentWeek : Math.max(1, currentWeek - 1);
+
+  const displayWeek = fixedCurrentWeek + currentWeekOffset;
+
+  const toWorkoutWeek = (w: number) => (w % 2 === 1 ? w : Math.max(1, w - 1));
+  const baseWeek = toWorkoutWeek(displayWeek);
+
+  const leverWeeks = levers
+    .map((l) => l.week_number)
+    .filter((w): w is number => typeof w === "number" && !Number.isNaN(w));
+
+  const minWeek = leverWeeks.length ? Math.min(...leverWeeks) : 1;
+  const earliestWorkoutWeek = Math.max(1, toWorkoutWeek(minWeek));
 
   const workoutWeeks: number[] = [];
   for (let w = baseWeek; w >= earliestWorkoutWeek; w -= 2) workoutWeeks.push(w);
