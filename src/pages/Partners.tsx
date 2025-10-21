@@ -103,11 +103,7 @@ export default function PartnersPage() {
   .map((l: { week_number?: number }) => l.week_number)
   .filter((w): w is number => typeof w === "number" && !Number.isNaN(w));
 
-  const workoutWeeks: number[] = useMemo(() => {
-    const uniq = Array.from(new Set(leverWeeks));
-    return uniq.sort((a, b) => b - a);
-  }, [leverWeeks]);
-
+  const workoutWeeks: number[] = Array.from(new Set(leverWeeks)).sort((a, b) => b - a);
 
   const q = leverQuery.trim().toLowerCase();
   const digitPart = q.replace(/\D+/g, ""); 
