@@ -100,16 +100,14 @@ export default function PartnersPage() {
   const baseWeek = toWorkoutWeek(displayWeek);
 
   const leverWeeks = levers
-    .map((l: { week_number?: number }) => l.week_number)
-    .filter((w): w is number => typeof w === "number" && !Number.isNaN(w));
+  .map((l: { week_number?: number }) => l.week_number)
+  .filter((w): w is number => typeof w === "number" && !Number.isNaN(w));
 
-  const minWeek = leverWeeks.length ? Math.min(...leverWeeks) : 1;
-  const earliestWorkoutWeek = Math.max(1, toWorkoutWeek(minWeek));
+  const workoutWeeks: number[] = useMemo(() => {
+    const uniq = Array.from(new Set(leverWeeks));
+    return uniq.sort((a, b) => b - a);
+  }, [leverWeeks]);
 
-  const workoutWeeks: number[] = [];
-  for (let w = baseWeek; w >= earliestWorkoutWeek; w -= 2) {
-    workoutWeeks.push(w);
-  }
 
   const q = leverQuery.trim().toLowerCase();
   const digitPart = q.replace(/\D+/g, ""); 
