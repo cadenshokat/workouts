@@ -103,7 +103,11 @@ export default function PartnersPage() {
   .map((l: { week_number?: number }) => l.week_number)
   .filter((w): w is number => typeof w === "number" && !Number.isNaN(w));
 
-  const workoutWeeks: number[] = Array.from(new Set(leverWeeks)).sort((a, b) => b - a);
+  const minWeek = leverWeeks.length ? Math.min(...leverWeeks) : 1;
+  const earliestWorkoutWeek = Math.max(1, toWorkoutWeek(minWeek));
+  
+  const workoutWeeks: number[] = [];
+  for (let w = baseWeek; w >= earliestWorkoutWeek; w --) { workoutWeeks.push(w); }
 
   const q = leverQuery.trim().toLowerCase();
   const digitPart = q.replace(/\D+/g, ""); 
